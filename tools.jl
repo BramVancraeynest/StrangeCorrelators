@@ -25,8 +25,8 @@ tensorexpr(name::Symbol, indout, indin) = Expr(:typed_vcat, name, Expr(:row, ind
     return :(@plansor $out_part := $in_part)
 end
 function cft_spectrum(A::AbstractTensorMap{S, N₁, N₂}, L::Integer, sector::Vector; Δ₀ = 0::Number, amount = 10::Integer, n_vec = 1::Integer) where {S, N₁, N₂}
-    sp = codomain(A)[2] # Infer spaces from transfer matrix tensor
-    spv = codomain(A)[1]
+    sp = domain(A)[2] # Infer spaces from transfer matrix tensor
+    spv = codomain(A)[2]
 
     charge = Vect[typeof(sector[1])](x => 1 for x in sector[1] ⊗ sector[2])
     init = rand(ComplexF64, sp^L, charge)
