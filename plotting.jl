@@ -7,9 +7,12 @@ function plot_setup(L::Integer)
     legend = :bottomleft
 
     plot(
-        title = title, xaxis = xaxis,
-        xticks = xticks, yticks = yticks,
-        yaxis = yaxis, legend = legend
+        title = title,
+        xaxis = xaxis,
+        xticks = xticks,
+        yticks = yticks,
+        yaxis = yaxis,
+        legend = legend
     )
 
     ε = 0.1
@@ -48,5 +51,21 @@ function plot_analytical(sector; color = :red)
         color = color, label = "$sector",
         markersize = ms, markeralpha = mal,
         markerstrokewidth = 0
+    )
+end
+function plot_setup_RGflow(L, start_iter, rnk)
+    title = "Scaling dimension flow L=$L, truncrank=$(rnk)"
+    xaxis = "TRG step"
+    yaxis = "Scaling dimension"
+    xticks = start_iter:100
+    positions = 1:num_steps
+    labels = string.(start_iter:(start_iter + num_steps - 1))
+    xticks = (positions, labels)
+    return plot(
+        title = title,
+        xaxis = xaxis,
+        yaxis = yaxis,
+        xticks = xticks,
+        legend = false
     )
 end

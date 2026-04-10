@@ -1,9 +1,11 @@
-using TensorKit, KrylovKit, Plots
+using TensorKit, KrylovKit, Plots, ColorSchemes
+using TNRKit
 
 include("tensors.jl")
 include("plotting.jl")
 include("tools.jl")
 include("spectra.jl")
+include("anyonic_TNR.jl")
 
 A = IsingTensor()
 

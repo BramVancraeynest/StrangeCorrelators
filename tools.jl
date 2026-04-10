@@ -1,5 +1,5 @@
 function action(A::AbstractTensorMap{S₁, N₁, N₂}, halfbraid::AbstractTensorMap{S₃, N₃, N₄}, x::AbstractTensorMap{S₂, d₁, d₂}) where {S₁, N₁, N₂, S₃, N₃, N₄, S₂, d₁, d₂}
-    transl = TranslationMPO(codomain(A)[1])
+    transl = TranslationMPO(domain(A)[2])
 
     t = apply_mpo(A, halfbraid, x)
     t = apply_mpo(A, halfbraid, t)
@@ -24,9 +24,9 @@ tensorexpr(name::Symbol, indout, indin) = Expr(:typed_vcat, name, Expr(:row, ind
 
     return :(@plansor $out_part := $in_part)
 end
-function cft_spectrum(A::AbstractTensorMap{S, N₁, N₂}, L::Integer, sector::Vector; Δ₀ = 0::Number, amount = 10::Integer, n_vec = 1::Integer) where {S, N₁, N₂}
-    sp = codomain(A)[2] # Infer spaces from transfer matrix tensor
-    spv = codomain(A)[1]
+function cft_spectrum(A::AbstractTensorMap{S, N₁, N₂}, L::Integer, sector::Vector; Δ₀ = 0::Number, amount = 10::Integer, n_vec = 1::Integer, mom = true) where {S, N₁, N₂}
+    sp = domain(A)[2] # Infer spaces from transfer matrix tensor
+    spv = codomain(A)[2]
 
     charge = Vect[typeof(sector[1])](x => 1 for x in sector[1] ⊗ sector[2])
     init = rand(ComplexF64, sp^L, charge)
@@ -34,13 +34,14 @@ function cft_spectrum(A::AbstractTensorMap{S, N₁, N₂}, L::Integer, sector::V
     norm(init) > 1.0e-12 || error("Initial vector has norm 0, length $L not compatible with charge $charge !")
 
     hb = half_braid(sector..., spv)
+    spectrum, vecs, _ = eigsolve(mom ? (x -> action(A, hb, x)) : (x -> apply_mpo(A, hb, x)), init, krylovdim = 20, amount, :LM)
 
-    spectrum, vecs, _ = eigsolve(x -> action(A, hb, x), init, krylovdim = 20, amount, :LM)
+    mom ? h = 2 : h = 1
 
     spectrum ./= norm(spectrum[1]) # Get rid of non-universal contributions
     spectrum .*= exp(-2π / L * 2Δ₀) # Need double Δ₀
     spins = angle.(spectrum) .* L / (2 * π)
-    dimensions = -L / (4 * π) .* log.(norm.(spectrum))
+    dimensions = -L / (2 * h * π) .* log.(norm.(spectrum))
 
     return spins, dimensions, vecs
 end
